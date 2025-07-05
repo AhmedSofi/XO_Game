@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XO Game - Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        
+        .game-container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .game-status {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            height: 30px;
+            color: #555;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 3px;
+            justify-content: center;
+            margin: 20px auto;
+            background-color: #333;
+            padding: 3px;
+            border-radius: 5px;
+        }
+        
+        .cell {
+            background-color: white;
+            border: none;
+            font-size: 36px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 2px;
+        }
+        
+        .cell:hover:not(:disabled) {
+            background-color: #f0f0f0;
+        }
+        
+        .cell:disabled {
+            cursor: not-allowed;
+        }
+        
+        .cell.x {
+            color: #e74c3c;
+        }
+        
+        .cell.o {
+            color: #3498db;
+        }
+        
+        .reset-button {
+            font-size: 16px;
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .reset-button:hover {
+            background-color: #27ae60;
+        }
+        
+        .winner-highlight {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: #fff3cd; }
+            50% { background-color: #ffeaa7; }
+            100% { background-color: #fff3cd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>XO Game - Tic Tac Toe</h1>
+        <div class="game-status" id="status">Player O's turn</div>
+        <div class="game-board" id="board">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+        <button class="reset-button" onclick="resetGame()">New Game</button>
+    </div>
+
+    <script>
+        class XOGame {
+            constructor() {
+                this.board = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                this.currentPlayer = 'O'; // Will switch to X on first move
+                this.moveCount = 0;
+                this.gameOver = false;
+            }
+            
+            reset() {
+                this.board = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                this.currentPlayer = 'O';
+                this.moveCount = 0;
+                this.gameOver = false;
+            }
+            
+            makeMove(position) {
+                if (!this.isValidMove(position) || this.gameOver) {
+                    return false;
+                }
+                
+                const index = position - 1;
+                this.board[index] = this.currentPlayer;
+                this.moveCount++;
+                return true;
+            }
+            
+            isValidMove(position) {
+                if (position < 1 || position > 9) {
+                    return false;
+                }
+                const index = position - 1;
+                return this.board[index] === (position.toString());
+            }
+            
+            switchPlayer() {
+                this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+            }
+            
+            checkWin(symbol) {
+                const winPatterns = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                    [0, 4, 8], [2, 4, 6] // diagonals
+                ];
+                
+                return winPatterns.some(pattern => 
+                    pattern.every(index => this.board[index] === symbol)
+                );
+            }
+            
+            getGameStatus() {
+                if (this.checkWin('X')) {
+                    return 'X_WINS';
+                }
+                if (this.checkWin('O')) {
+                    return 'O_WINS';
+                }
+                if (this.moveCount >= 9) {
+                    return 'DRAW';
+                }
+                return 'ONGOING';
+            }
+            
+            getWinningCells(symbol) {
+                const winPatterns = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                    [0, 4, 8], [2, 4, 6] // diagonals
+                ];
+                
+                for (const pattern of winPatterns) {
+                    if (pattern.every(index => this.board[index] === symbol)) {
+                        return pattern;
+                    }
+                }
+                return [];
+            }
+        }
+        
+        const game = new XOGame();
+        const cells = document.querySelectorAll('.cell');
+        const statusElement = document.getElementById('status');
+        
+        function updateDisplay() {
+            // Update cell contents
+            cells.forEach((cell, index) => {
+                const boardValue = game.board[index];
+                if (boardValue === 'X' || boardValue === 'O') {
+                    cell.textContent = boardValue;
+                    cell.disabled = true;
+                    cell.className = `cell ${boardValue.toLowerCase()}`;
+                } else {
+                    cell.textContent = '';
+                    cell.disabled = false;
+                    cell.className = 'cell';
+                }
+            });
+            
+            // Update status
+            const status = game.getGameStatus();
+            switch (status) {
+                case 'ONGOING':
+                    statusElement.textContent = `Player ${game.currentPlayer}'s turn`;
+                    break;
+                case 'X_WINS':
+                    statusElement.textContent = 'Player X wins!';
+                    highlightWinningCells('X');
+                    game.gameOver = true;
+                    break;
+                case 'O_WINS':
+                    statusElement.textContent = 'Player O wins!';
+                    highlightWinningCells('O');
+                    game.gameOver = true;
+                    break;
+                case 'DRAW':
+                    statusElement.textContent = "It's a draw!";
+                    game.gameOver = true;
+                    break;
+            }
+            
+            if (game.gameOver) {
+                cells.forEach(cell => cell.disabled = true);
+            }
+        }
+        
+        function highlightWinningCells(symbol) {
+            const winningCells = game.getWinningCells(symbol);
+            winningCells.forEach(index => {
+                cells[index].classList.add('winner-highlight');
+            });
+        }
+        
+        function handleCellClick(event) {
+            const index = parseInt(event.target.dataset.index);
+            const position = index + 1;
+            
+            // Switch player before making move (to match original game behavior)
+            game.switchPlayer();
+            
+            if (game.makeMove(position)) {
+                updateDisplay();
+                
+                if (game.getGameStatus() !== 'ONGOING') {
+                    setTimeout(() => {
+                        const status = game.getGameStatus();
+                        let message = '';
+                        switch (status) {
+                            case 'X_WINS':
+                                message = 'Player X wins!\n\nWould you like to play again?';
+                                break;
+                            case 'O_WINS':
+                                message = 'Player O wins!\n\nWould you like to play again?';
+                                break;
+                            case 'DRAW':
+                                message = "It's a draw!\n\nWould you like to play again?";
+                                break;
+                        }
+                        
+                        if (message && confirm(message)) {
+                            resetGame();
+                        }
+                    }, 1000);
+                }
+            }
+        }
+        
+        function resetGame() {
+            game.reset();
+            updateDisplay();
+        }
+        
+        // Add event listeners
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+        
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
