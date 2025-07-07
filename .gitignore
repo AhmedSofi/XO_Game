@@ -1,0 +1,30 @@
+# Build artifacts
+xo_game
+xo_console
+xo_console_gui
+xo_qt_gui
+xo_gui
+*.o
+*.exe
+
+# Qt build files
+build/
+*.pro.user
+*.qmake.stash
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# CMake build files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
